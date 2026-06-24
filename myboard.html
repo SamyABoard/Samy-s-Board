@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>My Board</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f5f5f0;color:#1a1a1a;height:100vh;overflow:hidden}
+.login-screen{display:flex;align-items:center;justify-content:center;height:100vh}
+.login-card{background:#fff;border-radius:20px;padding:40px 48px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.08);max-width:380px;width:92%}
+.login-icon{font-size:48px;color:#7F77DD;margin-bottom:16px}
+.login-title{font-size:22px;font-weight:700;margin-bottom:8px}
+.login-sub{font-size:14px;color:#888;line-height:1.6;margin-bottom:28px}
+.ms-btn{background:#0078d4;color:#fff;border:none;border-radius:10px;padding:14px 28px;font-size:15px;cursor:pointer;display:flex;align-items:center;gap:10px;font-weight:600;width:100%;justify-content:center;transition:background 0.15s}
+.ms-btn:hover{background:#006cbd}
+.ms-btn:disabled{background:#ccc;cursor:not-allowed}
+.login-note{font-size:12px;color:#bbb;margin-top:12px}
+.login-status{font-size:13px;color:#888;margin-top:10px;min-height:20px}
+.error-box{background:#fff0f0;color:#e24b4a;border-radius:8px;padding:10px;font-size:13px;margin-top:10px;display:none;line-height:1.5}
+.topbar{display:none;align-items:center;justify-content:space-between;padding:10px 20px;background:#fff;border-bottom:1px solid #e5e5e0}
+.topbar.visible{display:flex}
+.app-logo{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.app-logo i{color:#7F77DD}
+.sync-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;display:flex;align-items:center;gap:5px}
+.sync-badge.synced{background:#e6f7f0;color:#1D9E75}
+.sync-badge.syncing{background:#fff3e0;color:#BA7517}
+.sync-badge.error{background:#fff0f0;color:#e24b4a}
+.user-chip{display:flex;align-items:center;gap:8px;background:#f5f5f0;border-radius:20px;padding:5px 12px 5px 5px}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:#7F77DD;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.user-name{font-size:13px;color:#555;font-weight:500}
+.signout-btn{background:none;border:1px solid #e5e5e0;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;color:#888}
+.app{display:none;height:calc(100vh - 53px)}
+.app.visible{display:flex}
+.board-side{flex:1;display:flex;flex-direction:column;background:#fff;border-right:1px solid #e5e5e0;overflow:hidden}
+.board-header{padding:14px 20px;border-bottom:1px solid #e5e5e0;display:flex;align-items:center;justify-content:space-between}
+.board-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.board-title i{color:#7F77DD}
+.add-btn{background:#7F77DD;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:500}
+.add-btn:hover{background:#534AB7}
+.squares-grid{flex:1;overflow-y:auto;padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;align-content:start}
+.square{background:#fff;border:1.5px solid #e5e5e0;border-radius:14px;padding:14px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s,transform 0.1s;min-height:130px;display:flex;flex-direction:column;gap:8px;position:relative}
+.square:hover{border-color:#aaa;box-shadow:0 4px 12px rgba(0,0,0,0.08);transform:translateY(-2px)}
+.square-color-bar{height:4px;margin:-14px -14px 8px;border-radius:12px 12px 0 0}
+.sq-icon{font-size:20px}
+.sq-title{font-size:13px;font-weight:600;line-height:1.4}
+.sq-preview{font-size:11px;color:#888;line-height:1.5;flex:1}
+.sq-meta{font-size:11px;color:#aaa;margin-top:auto;display:flex;align-items:center;gap:4px}
+.sq-del{position:absolute;top:8px;right:8px;background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;opacity:0;padding:4px;border-radius:6px}
+.square:hover .sq-del{opacity:1}
+.sq-del:hover{color:#e24b4a;background:#fff0f0}
+.cal-side{width:270px;flex-shrink:0;display:flex;flex-direction:column;background:#fff;overflow:hidden}
+.cal-header{padding:14px 20px 10px;border-bottom:1px solid #e5e5e0;display:flex;align-items:center;justify-content:space-between}
+.cal-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.cal-title i{color:#7F77DD}
+.sync-outlook{font-size:11px;color:#0078d4;cursor:pointer;display:flex;align-items:center;gap:4px}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 4px}
+.cal-month-label{font-size:13px;font-weight:600}
+.cal-nav-btn{background:none;border:1px solid #e5e5e0;border-radius:8px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#666;font-size:12px}
+.cal-grid{padding:0 10px;display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.cal-day-lbl{font-size:10px;color:#aaa;text-align:center;padding:4px 0;font-weight:600;text-transform:uppercase}
+.cal-day{font-size:12px;text-align:center;padding:6px 2px;border-radius:8px;cursor:pointer;color:#555;position:relative;transition:background 0.1s}
+.cal-day:hover{background:#f0efff}
+.cal-day.today{background:#7F77DD;color:#fff;font-weight:600}
+.cal-day.selected{background:#f0efff;color:#7F77DD;font-weight:600}
+.cal-day.has-event::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:#1D9E75}
+.cal-day.today::after{background:#fff}
+.cal-day.other-month{color:#ccc}
+.meetings-area{flex:1;overflow-y:auto;padding:10px 14px 14px}
+.meetings-heading{font-size:11px;font-weight:600;color:#aaa;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+.meeting-card{background:#f8f8f5;border-radius:10px;padding:10px 12px;margin-bottom:8px;border-left:3px solid #7F77DD}
+.meeting-card.c1{border-left-color:#1D9E75}
+.meeting-card.c2{border-left-color:#378ADD}
+.meeting-card.ms-event{border-left-color:#0078d4}
+.meeting-name{font-size:13px;font-weight:600}
+.meeting-time{font-size:11px;color:#888;margin-top:2px}
+.meeting-source{font-size:10px;color:#0078d4;margin-top:2px}
+.add-mtg-btn{width:100%;background:none;border:1.5px dashed #ddd;border-radius:10px;padding:8px;font-size:12px;color:#aaa;cursor:pointer;text-align:center;margin-top:4px}
+.no-meetings{font-size:12px;color:#bbb;padding:8px 0}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:200}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:20px;padding:24px;width:520px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.modal-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px}
+.modal-title-in{font-size:20px;font-weight:600;background:none;border:none;outline:none;flex:1;font-family:inherit}
+.modal-title-in::placeholder{color:#ccc}
+.close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;padding:2px;border-radius:6px}
+.color-row{display:flex;gap:8px;margin-bottom:16px}
+.cdot{width:20px;height:20px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform 0.1s}
+.cdot.active{border-color:#333;transform:scale(1.15)}
+.sec-label{font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.notes-ta{width:100%;min-height:90px;border:1.5px solid #e5e5e0;border-radius:10px;padding:10px 12px;font-size:14px;resize:vertical;font-family:inherit;background:#fafaf8;outline:none;line-height:1.7;margin-bottom:16px}
+.notes-ta:focus{border-color:#7F77DD}
+.todo-list{margin-bottom:10px}
+.todo-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f0f0ec}
+.todo-row:last-child{border-bottom:none}
+.todo-cb{width:16px;height:16px;cursor:pointer;accent-color:#7F77DD;flex-shrink:0}
+.todo-in{flex:1;background:none;border:none;outline:none;font-family:inherit;font-size:14px}
+.todo-rm{background:none;border:none;color:#ccc;cursor:pointer;font-size:13px;padding:3px;opacity:0}
+.todo-row:hover .todo-rm{opacity:1}
+.add-todo-row{display:flex;gap:8px;margin-bottom:4px}
+.add-todo-in{flex:1;border:1.5px solid #e5e5e0;border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none;background:#fafaf8}
+.add-todo-go{background:#f0efff;color:#7F77DD;border:none;border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer;font-weight:600}
+.modal-footer{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0ec}
+.del-btn{background:none;border:1.5px solid #e5e5e0;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;color:#888;display:flex;align-items:center;gap:6px}
+.del-btn:hover{background:#fff0f0;border-color:#f09595;color:#e24b4a}
+.save-btn{background:#7F77DD;color:#fff;border:none;border-radius:8px;padding:9px 24px;font-size:14px;cursor:pointer;font-weight:600}
+.mtg-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:300}
+.mtg-overlay.open{display:flex}
+.mtg-modal{background:#fff;border-radius:20px;padding:24px;width:360px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.m-lbl{font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;margin-top:12px}
+.m-lbl:first-child{margin-top:0}
+.m-in{width:100%;border:1.5px solid #e5e5e0;border-radius:8px;padding:8px 12px;font-size:14px;font-family:inherit;outline:none;background:#fafaf8}
+.m-row{display:flex;gap:10px}
+.m-row>div{flex:1}
+.mtg-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid #f0f0ec}
+.cancel-btn{background:none;border:1.5px solid #e5e5e0;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;color:#666}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.toast.show{opacity:1}
+@media(max-width:640px){.app.visible{display:block;overflow:auto;height:auto}.board-side{min-height:55vh;border-right:none;border-bottom:1px solid #e5e5e0}.cal-side{width:100%}body{overflow:auto}}
+</style>
+</head>
+<body>
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-icon"><i class="fa-solid fa-border-all"></i></div>
+    <div class="login-title">My Board</div>
+    <div class="login-sub">Your personal idea board & planner. Sign in with Microsoft to sync across all your devices.</div>
+    <button class="ms-btn" id="signInBtn" onclick="signIn()">
+      <svg width="20" height="20" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#F25022"/><rect x="11" y="1" width="9" height="9" fill="#7FBA00"/><rect x="1" y="11" width="9" height="9" fill="#00A4EF"/><rect x="11" y="11" width="9" height="9" fill="#FFB900"/></svg>
+      Sign in with Microsoft
+    </button>
+    <div class="login-note">Your data is saved privately to your OneDrive</div>
+    <div class="login-status" id="loginStatus"></div>
+    <div class="error-box" id="errorBox"></div>
+  </div>
+</div>
+<div class="topbar" id="topbar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="app-logo"><i class="fa-solid fa-border-all"></i> My Board</div>
+    <div class="sync-badge synced" id="syncBadge"><i class="fa-solid fa-cloud"></i> <span id="syncText">Synced</span></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="user-chip"><div class="user-avatar" id="userAvatar">?</div><div class="user-name" id="userName">Loading...</div></div>
+    <button class="signout-btn" onclick="signOut()"><i class="fa-solid fa-right-from-bracket"></i> Sign out</button>
+  </div>
+</div>
+<div class="app" id="appMain">
+  <div class="board-side">
+    <div class="board-header">
+      <div class="board-title"><i class="fa-solid fa-border-all"></i> My Board</div>
+      <button class="add-btn" onclick="openNew()"><i class="fa-solid fa-plus"></i> New idea</button>
+    </div>
+    <div class="squares-grid" id="grid"></div>
+  </div>
+  <div class="cal-side">
+    <div class="cal-header">
+      <div class="cal-title"><i class="fa-solid fa-calendar-days"></i> Calendar</div>
+      <div class="sync-outlook" onclick="fetchOutlook()"><i class="fa-brands fa-microsoft"></i> Sync Outlook</div>
+    </div>
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="shiftMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+      <span class="cal-month-label" id="calLabel"></span>
+      <button class="cal-nav-btn" onclick="shiftMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="meetings-area">
+      <div class="meetings-heading" id="mtgHeading">Upcoming</div>
+      <div id="mtgList"></div>
+      <button class="add-mtg-btn" onclick="openMtg()"><i class="fa-solid fa-plus"></i> Add meeting</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-top"><input class="modal-title-in" id="mTitle" placeholder="Idea title…"/><button class="close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="color-row" id="colorRow"></div>
+    <div class="sec-label"><i class="fa-regular fa-note-sticky"></i> Notes</div>
+    <textarea class="notes-ta" id="mNotes" placeholder="Write your notes here…"></textarea>
+    <div class="sec-label"><i class="fa-regular fa-square-check"></i> To-do list</div>
+    <div class="todo-list" id="todoList"></div>
+    <div class="add-todo-row"><input class="add-todo-in" id="todoIn" placeholder="Add a task…" onkeydown="if(event.key==='Enter')addTodo()"/><button class="add-todo-go" onclick="addTodo()">Add</button></div>
+    <div class="modal-footer"><button class="del-btn" onclick="deleteSquare()"><i class="fa-regular fa-trash-can"></i> Delete</button><button class="save-btn" onclick="saveSquare()">Save &amp; Sync</button></div>
+  </div>
+</div>
+<div class="mtg-overlay" id="mtgOverlay">
+  <div class="mtg-modal">
+    <div class="modal-top"><span style="font-size:16px;font-weight:600">Add meeting</span><button class="close-btn" onclick="closeMtg()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="m-lbl">Title</div><input class="m-in" id="mtgTitle" placeholder="Meeting title…"/>
+    <div class="m-lbl">Date</div><input class="m-in" type="date" id="mtgDate"/>
+    <div class="m-row"><div><div class="m-lbl">Start</div><input class="m-in" type="time" id="mtgStart"/></div><div><div class="m-lbl">End</div><input class="m-in" type="time" id="mtgEnd"/></div></div>
+    <div class="mtg-footer"><button class="cancel-btn" onclick="closeMtg()">Cancel</button><button class="save-btn" onclick="saveMtg()">Add meeting</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- Load MSAL from CDN with onload callback -->
+<script>
+// App code - runs after MSAL loads
+window.msalReady = false;
+window.msalInstance = null;
+window.userAccount = null;
+let squares=[],meetings=[],cur=null;
+const today=new Date();
+let calY=today.getFullYear(),calM=today.getMonth(),selDate=null;
+const COLORS=['#7F77DD','#1D9E75','#D85A30','#378ADD','#D4537E','#BA7517'];
+const ICONS=['fa-lightbulb','fa-rocket','fa-heart','fa-star','fa-code','fa-book','fa-palette','fa-briefcase','fa-music','fa-camera'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS=['Su','Mo','Tu','We','Th','Fr','Sa'];
+const CLIENT_ID='35ec684c-535b-41a6-839a-89a6d8eb39e7';
+const SCOPES=['User.Read','Files.ReadWrite','Calendars.Read'];
+const ONEDRIVE_FILE='myboard_data.json';
+
+function setStatus(m){document.getElementById('loginStatus').textContent=m;}
+function showError(m){const e=document.getElementById('errorBox');e.textContent=m;e.style.display='block';setStatus('');}
+
+async function onMsalLoaded(){
+  try{
+    window.msalInstance=new msal.PublicClientApplication({
+      auth:{clientId:CLIENT_ID,authority:'https://login.microsoftonline.com/bd3f8e08-5570-475c-9b7a-5212c94f7066',redirectUri:window.location.origin+window.location.pathname},
+      cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}
+    });
+    await window.msalInstance.initialize();
+    window.msalReady=true;
+    const resp=await window.msalInstance.handleRedirectPromise();
+    if(resp&&resp.account){window.userAccount=resp.account;await afterLogin();return;}
+    const accounts=window.msalInstance.getAllAccounts();
+    if(accounts.length>0){window.userAccount=accounts[0];await afterLogin();return;}
+    setStatus('Ready');
+  }catch(e){showError('Init error: '+e.message);}
+}
+
+async function signIn(){
+  if(!window.msalReady||!window.msalInstance){
+    showError('Please wait a moment for the page to fully load, then try again.');
+    return;
+  }
+  document.getElementById('errorBox').style.display='none';
+  setStatus('Opening Microsoft sign-in…');
+  try{
+    const resp=await window.msalInstance.loginPopup({scopes:SCOPES,prompt:'select_account'});
+    window.userAccount=resp.account;
+    await afterLogin();
+  }catch(e){
+    if(e.errorCode==='user_cancelled')setStatus('Sign-in cancelled.');
+    else if(e.errorCode==='popup_window_error')showError('Popup blocked! Please allow popups for this site in browser settings, then try again.');
+    else showError('Error: '+(e.message||e.errorCode||JSON.stringify(e)));
+  }
+}
+
+async function getToken(){
+  try{const r=await window.msalInstance.acquireTokenSilent({scopes:SCOPES,account:window.userAccount});return r.accessToken;}
+  catch{const r=await window.msalInstance.acquireTokenPopup({scopes:SCOPES});return r.accessToken;}
+}
+
+async function afterLogin(){
+  try{
+    const token=await getToken();
+    const r=await fetch('https://graph.microsoft.com/v1.0/me',{headers:{Authorization:'Bearer '+token}});
+    const u=await r.json();
+    const name=u.displayName||u.userPrincipalName||'User';
+    const initials=name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    document.getElementById('userAvatar').textContent=initials;
+    document.getElementById('userName').textContent=name;
+  }catch(e){}
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('topbar').classList.add('visible');
+  document.getElementById('appMain').classList.add('visible');
+  await loadFromOneDrive();renderGrid();renderCal();fetchOutlook();
+}
+
+function signOut(){window.msalInstance.logoutPopup({account:window.userAccount}).then(()=>location.reload());}
+function setSyncStatus(s,t){document.getElementById('syncBadge').className='sync-badge '+s;document.getElementById('syncText').textContent=t;}
+
+async function loadFromOneDrive(){
+  setSyncStatus('syncing','Loading…');
+  try{
+    const token=await getToken();
+    const res=await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${ONEDRIVE_FILE}:/content`,{headers:{Authorization:'Bearer '+token}});
+    if(res.ok){const d=await res.json();squares=d.squares||[];meetings=d.meetings||[];setSyncStatus('synced','Synced');}
+    else if(res.status===404){
+      squares=[{id:1,title:'Product ideas',notes:'Brainstorm new features.',todos:[{text:'Research competitors',done:true},{text:'Write spec doc',done:false}],color:0,icon:'fa-rocket'},{id:2,title:'Reading list',notes:'Books to read.',todos:[{text:'Atomic Habits',done:true},{text:'Deep Work',done:false}],color:3,icon:'fa-book'},{id:3,title:'Side project',notes:'Weekend coding project.',todos:[{text:'Pick a tech stack',done:false}],color:1,icon:'fa-code'},{id:4,title:'Goals',notes:"This month's goals.",todos:[{text:'Exercise 3x/week',done:false},{text:'Read 20 pages daily',done:true}],color:5,icon:'fa-star'}];
+      meetings=[];await saveToOneDrive();
+    }
+  }catch(e){setSyncStatus('error','Sync error');showToast('Could not load from OneDrive','error');}
+}
+
+async function saveToOneDrive(){
+  setSyncStatus('syncing','Saving…');
+  try{
+    const token=await getToken();
+    const res=await fetch(`https://graph.microsoft.com/v1.0/me/drive/root:/${ONEDRIVE_FILE}:/content`,{method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({squares,meetings})});
+    if(res.ok){setSyncStatus('synced','Synced');showToast('Saved & synced ☁️');}
+    else setSyncStatus('error','Save failed');
+  }catch(e){setSyncStatus('error','Sync error');}
+}
+
+async function fetchOutlook(){
+  try{
+    const token=await getToken();const now=new Date(),end=new Date();end.setDate(end.getDate()+30);
+    const res=await fetch(`https://graph.microsoft.com/v1.0/me/calendarview?startDateTime=${now.toISOString()}&endDateTime=${end.toISOString()}&$top=25&$select=subject,start,end`,{headers:{Authorization:'Bearer '+token}});
+    if(!res.ok)return;
+    const data=await res.json();
+    const evts=(data.value||[]).map(e=>({id:'ms_'+(e.id||'').substring(0,12),title:e.subject||'(No title)',date:e.start.dateTime.substring(0,10),start:e.start.dateTime.substring(11,16),end:e.end.dateTime.substring(11,16),fromOutlook:true}));
+    meetings=[...meetings.filter(m=>!m.fromOutlook),...evts];
+    await saveToOneDrive();renderCal();showToast(`${evts.length} Outlook events loaded ✓`);
+  }catch(e){}
+}
+
+function esc(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function renderGrid(){const g=document.getElementById('grid');g.innerHTML='';if(!squares.length){g.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#bbb;padding:40px 0;font-size:14px"><i class="fa-regular fa-lightbulb" style="font-size:32px;display:block;margin-bottom:10px"></i>No ideas yet — click New idea!</div>';return;}squares.forEach(s=>{const done=s.todos.filter(t=>t.done).length,total=s.todos.length;const d=document.createElement('div');d.className='square';d.innerHTML=`<div class="square-color-bar" style="background:${COLORS[s.color]}"></div><div class="sq-icon"><i class="fa-solid ${s.icon}" style="color:${COLORS[s.color]}"></i></div><div class="sq-title">${esc(s.title)}</div>${s.notes?`<div class="sq-preview">${esc(s.notes.substring(0,60))}${s.notes.length>60?'…':''}</div>`:'<div class="sq-preview" style="color:#ddd">No notes yet</div>'}<div class="sq-meta"><i class="fa-regular fa-square-check" style="font-size:10px"></i> ${total?`${done}/${total} done`:'No tasks'}</div><button class="sq-del" onclick="event.stopPropagation();delSquare(${s.id})"><i class="fa-solid fa-xmark"></i></button>`;d.onclick=()=>openSquare(s.id);g.appendChild(d);});}
+function openNew(){cur={id:Date.now(),title:'',notes:'',todos:[],color:Math.floor(Math.random()*COLORS.length),icon:ICONS[Math.floor(Math.random()*ICONS.length)]};fillModal();document.getElementById('overlay').classList.add('open');}
+function openSquare(id){cur=JSON.parse(JSON.stringify(squares.find(s=>s.id===id)));fillModal();document.getElementById('overlay').classList.add('open');}
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
+function fillModal(){document.getElementById('mTitle').value=cur.title;document.getElementById('mNotes').value=cur.notes;document.getElementById('colorRow').innerHTML=COLORS.map((c,i)=>`<div class="cdot${cur.color===i?' active':''}" style="background:${c}" onclick="pickColor(${i})"></div>`).join('');renderTodos();}
+function pickColor(i){cur.color=i;document.querySelectorAll('.cdot').forEach((d,idx)=>d.classList.toggle('active',idx===i));}
+function renderTodos(){document.getElementById('todoList').innerHTML=cur.todos.map((t,i)=>`<div class="todo-row"><input type="checkbox" class="todo-cb" ${t.done?'checked':''} onchange="toggleTodo(${i})"/><input class="todo-in" value="${esc(t.text)}" onchange="cur.todos[${i}].text=this.value" style="${t.done?'text-decoration:line-through;color:#bbb':''}"/><button class="todo-rm" onclick="cur.todos.splice(${i},1);renderTodos()"><i class="fa-solid fa-xmark"></i></button></div>`).join('');}
+function toggleTodo(i){cur.todos[i].done=!cur.todos[i].done;renderTodos();}
+function addTodo(){const inp=document.getElementById('todoIn');if(!inp.value.trim())return;cur.todos.push({text:inp.value.trim(),done:false});inp.value='';renderTodos();}
+async function saveSquare(){cur.title=document.getElementById('mTitle').value.trim()||'Untitled';cur.notes=document.getElementById('mNotes').value;const idx=squares.findIndex(s=>s.id===cur.id);if(idx>=0)squares[idx]=cur;else squares.push(cur);closeModal();renderGrid();await saveToOneDrive();}
+async function deleteSquare(){squares=squares.filter(s=>s.id!==cur.id);closeModal();renderGrid();await saveToOneDrive();}
+async function delSquare(id){if(confirm('Delete?')){squares=squares.filter(s=>s.id!==id);renderGrid();await saveToOneDrive();}}
+function fmtDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function renderCal(){document.getElementById('calLabel').textContent=MONTHS[calM]+' '+calY;const g=document.getElementById('calGrid');g.innerHTML=DAYS.map(d=>`<div class="cal-day-lbl">${d}</div>`).join('');const fd=new Date(calY,calM,1).getDay(),dim=new Date(calY,calM+1,0).getDate();const es=new Set(meetings.map(m=>m.date)),ts=fmtDate(today),pd=new Date(calY,calM,0).getDate();for(let i=fd-1;i>=0;i--)g.innerHTML+=`<div class="cal-day other-month">${pd-i}</div>`;for(let d=1;d<=dim;d++){const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const cls=['cal-day'];if(ds===ts)cls.push('today');if(ds===selDate)cls.push('selected');if(es.has(ds))cls.push('has-event');g.innerHTML+=`<div class="${cls.join(' ')}" onclick="pickDay('${ds}')">${d}</div>`;}renderMtgs(selDate);}
+function shiftMonth(n){calM+=n;if(calM>11){calM=0;calY++}if(calM<0){calM=11;calY--}renderCal();}
+function pickDay(ds){selDate=(selDate===ds?null:ds);renderCal();}
+function renderMtgs(date){const list=document.getElementById('mtgList'),head=document.getElementById('mtgHeading');let items;if(date){items=meetings.filter(m=>m.date===date);head.textContent='Meetings · '+date.slice(5).replace('-','/');}else{const t=fmtDate(today);items=meetings.filter(m=>m.date>=t).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,6);head.textContent='Upcoming';}list.innerHTML=items.length?items.map((m,i)=>`<div class="meeting-card ${m.fromOutlook?'ms-event':'c'+i%3}"><div class="meeting-name">${esc(m.title)}</div><div class="meeting-time">${m.start}${m.end?' – '+m.end:''} · ${m.date}</div>${m.fromOutlook?'<div class="meeting-source"><i class="fa-brands fa-microsoft"></i> Outlook</div>':''}</div>`).join(''):'<div class="no-meetings">No meetings</div>';}
+function openMtg(){document.getElementById('mtgTitle').value='';document.getElementById('mtgDate').value=selDate||fmtDate(today);document.getElementById('mtgStart').value='';document.getElementById('mtgEnd').value='';document.getElementById('mtgOverlay').classList.add('open');}
+function closeMtg(){document.getElementById('mtgOverlay').classList.remove('open');}
+async function saveMtg(){const t=document.getElementById('mtgTitle').value.trim();if(!t){alert('Please enter a title.');return;}meetings.push({id:Date.now(),title:t,date:document.getElementById('mtgDate').value,start:document.getElementById('mtgStart').value,end:document.getElementById('mtgEnd').value});closeMtg();renderCal();await saveToOneDrive();}
+let toastTimer;
+function showToast(msg,type='ok'){const t=document.getElementById('toast');t.innerHTML=(type==='error'?'<i class="fa-solid fa-circle-exclamation"></i> ':'<i class="fa-solid fa-cloud-arrow-up"></i> ')+msg;t.style.background=type==='error'?'#e24b4a':'#1a1a1a';t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3000);}
+</script>
+<!-- Load MSAL last with onload to guarantee it's ready -->
+<script src="https://unpkg.com/@azure/msal-browser@2.38.0/lib/msal-browser.min.js" onload="onMsalLoaded()" onerror="showError('Could not load Microsoft auth library. Please check your internet connection.')"></script>
+</body>
+</html>
